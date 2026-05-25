@@ -1,6 +1,6 @@
 @{
     RootModule        = 'Save-TerminalHere.psm1'
-    ModuleVersion     = '0.7.1'
+    ModuleVersion     = '0.7.2'
     GUID              = 'c4d2f8a1-7b3e-4d92-9a5c-1e6b8f4d2a37'
     Author            = 'Julian Snowden'
     CompanyName       = 'Unknown'
@@ -16,7 +16,7 @@
             Tags         = @('WindowsTerminal', 'Profile', 'Bookmark', 'Productivity')
             LicenseUri   = 'https://github.com/snowdej/Save-TerminalHere/blob/main/LICENSE'
             ProjectUri   = 'https://github.com/snowdej/Save-TerminalHere'
-            ReleaseNotes = '0.7.1 - install.ps1 now echoes the installed version and a richer quick-reference: bookmark current dir, bookmark with tab colour, fresh Claude, resume Claude (name-defaults-to-id), browse/rename/delete, export/import. No behaviour changes in the module itself.'
+            ReleaseNotes = '0.7.2 - -Claude <id> now emits `claude --continue --resume <id>` (was `claude --resume <id>`). The --continue flag tells the Claude CLI to skip its disambiguation picker and resume the latest session whose name matches, which is what bookmarks generally want.'
         }
     }
 }

@@ -91,7 +91,7 @@ Write-Host ""
 Write-Host "  # Bookmark + auto-launch a fresh Claude session:"
 Write-Host "  Save-TerminalHere claude-work -Claude `"`"" -ForegroundColor White
 Write-Host ""
-Write-Host "  # Bookmark + resume a specific Claude session (name defaults to id):"
+Write-Host "  # Bookmark + resume latest Claude session matching <id> (name defaults to id):"
 Write-Host "  Save-TerminalHere -Claude note-2026" -ForegroundColor White
 Write-Host ""
 Write-Host "  # Browse, rename, delete:"

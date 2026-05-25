@@ -128,8 +128,9 @@ function Save-TerminalHere {
 
     .PARAMETER Claude
     Make the tab auto-run Claude. Pass an empty string for a fresh session
-    (`claude`), or a session ID to resume (`claude --resume "<id>"`).
-    Mutually exclusive with -StartupCommand.
+    (`claude`), or a session ID to resume the latest matching session
+    (`claude --continue --resume <id>`, which skips the disambiguation
+    picker). Mutually exclusive with -StartupCommand.
 
     .EXAMPLE
     Save-TerminalHere work
@@ -146,8 +147,8 @@ function Save-TerminalHere {
 
     .EXAMPLE
     Save-TerminalHere -Name "story-jan-2026" -Claude "xyz-123"
-    Opens a pwsh tab and resumes Claude session xyz-123:
-    `claude --resume "xyz-123"`.
+    Opens a pwsh tab and resumes the latest Claude session matching
+    xyz-123: `claude --continue --resume xyz-123`.
 
     .EXAMPLE
     Save-TerminalHere -Claude "note-2026"
@@ -188,8 +189,12 @@ function Save-TerminalHere {
         # Bare ID (no quotes) — Claude session IDs are slug-shaped. Adding
         # inner quotes would force escaping that Windows command-line
         # tokenization doesn't survive, breaking the resume flow.
+        #
+        # `--continue --resume <id>` picks the latest session matching <id>
+        # without showing the disambiguation picker. Plain `--resume <id>`
+        # by itself opens the picker whenever the name is ambiguous.
         $StartupCommand = if ($Claude) {
-            'claude --resume ' + $Claude
+            'claude --continue --resume ' + $Claude
         } else {
             'claude'
         }

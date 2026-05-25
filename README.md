@@ -70,7 +70,8 @@ Save-TerminalHere -Name "venv-work" -StartupCommand ". .\venv\Scripts\Activate"
 # Open Claude when the bookmark opens (fresh session):
 Save-TerminalHere -Name "claude-work" -Claude ""
 
-# Resume a specific Claude session (produces: claude --resume "xyz-123"):
+# Resume the latest Claude session matching an ID — no picker:
+# (produces: claude --continue --resume xyz-123)
 Save-TerminalHere -Name "story-jan-2026" -Claude "xyz-123"
 
 # Shorthand: when -Claude has a value and -Name isn't given,
