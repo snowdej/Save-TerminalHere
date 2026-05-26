@@ -603,8 +603,11 @@ function Export-TerminalHere {
     Wildcard filter on bookmark name. Default '*' (all).
 
     .PARAMETER Path
-    Output file path. If omitted, defaults to a timestamped file on your
-    Desktop (`~\Desktop\save-terminal-here-<yyyyMMdd-HHmmss>.json`).
+    Output file path. If omitted, defaults to a timestamped, machine-tagged
+    file on your Desktop:
+    `~\Desktop\save-terminal-here-<COMPUTERNAME>-<yyyyMMdd-HHmmss>.json`.
+    The COMPUTERNAME tag makes it obvious which machine the bookmarks came
+    from when shuttling files between PCs.
 
     .PARAMETER IncludeSchemes
     Also include the colour schemes referenced by exported profiles, so the
@@ -612,7 +615,7 @@ function Export-TerminalHere {
 
     .EXAMPLE
     Export-TerminalHere
-    # Writes to ~\Desktop\save-terminal-here-20260525-203000.json
+    # Writes to e.g. ~\Desktop\save-terminal-here-DESKTOP-AB12CD3-20260526-081650.json
 
     .EXAMPLE
     Export-TerminalHere -Path .\my-terminals.json -IncludeSchemes
@@ -631,7 +634,8 @@ function Export-TerminalHere {
 
     if (-not $Path) {
         $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
-        $Path = Join-Path ([Environment]::GetFolderPath('Desktop')) "save-terminal-here-$stamp.json"
+        $pc = $env:COMPUTERNAME
+        $Path = Join-Path ([Environment]::GetFolderPath('Desktop')) "save-terminal-here-$pc-$stamp.json"
     }
 
     $settings = Read-TerminalSettings
