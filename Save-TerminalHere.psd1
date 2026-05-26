@@ -1,6 +1,6 @@
 @{
     RootModule        = 'Save-TerminalHere.psm1'
-    ModuleVersion     = '0.7.3'
+    ModuleVersion     = '0.7.4'
     GUID              = 'c4d2f8a1-7b3e-4d92-9a5c-1e6b8f4d2a37'
     Author            = 'Julian Snowden'
     CompanyName       = 'Unknown'
@@ -16,7 +16,7 @@
             Tags         = @('WindowsTerminal', 'Profile', 'Bookmark', 'Productivity')
             LicenseUri   = 'https://github.com/snowdej/Save-TerminalHere/blob/main/LICENSE'
             ProjectUri   = 'https://github.com/snowdej/Save-TerminalHere'
-            ReleaseNotes = '0.7.3 - Export-TerminalHere default filename now includes $env:COMPUTERNAME, so cross-machine exports are immediately identifiable. Format: save-terminal-here-<PCNAME>-<yyyyMMdd-HHmmss>.json.'
+            ReleaseNotes = '0.7.4 - settings.json is now parsed as JSONC: line comments (//), block comments (/* */) and trailing commas no longer break Save-/Get-/Remove-/etc. Writes still produce plain JSON, so a save strips any comments from the live file (the pre-write .bak preserves them); the module emits a Write-Warning when this happens. Also: README example for -Claude shorthand fixed to match 0.7.2 behaviour. 0.7.3 - Export-TerminalHere default filename now includes $env:COMPUTERNAME, so cross-machine exports are immediately identifiable. Format: save-terminal-here-<PCNAME>-<yyyyMMdd-HHmmss>.json.'
         }
     }
 }

@@ -77,7 +77,7 @@ Save-TerminalHere -Name "story-jan-2026" -Claude "xyz-123"
 # Shorthand: when -Claude has a value and -Name isn't given,
 # the bookmark name defaults to the session ID:
 Save-TerminalHere -Claude "note-2026"
-# → bookmark "note-2026" runs:  claude --resume "note-2026"
+# → bookmark "note-2026" runs:  claude --continue --resume note-2026
 ```
 
 ### Move your bookmarks to another machine
@@ -88,7 +88,8 @@ the receiving machine. GUIDs are preserved in the export, and the importer
 retags them to the local machine's prefix automatically.
 
 ```powershell
-# Writes to ~\Desktop\save-terminal-here-<timestamp>.json by default:
+# Writes to ~\Desktop\save-terminal-here-<PCNAME>-<timestamp>.json by default
+# (the PC name makes cross-machine exports immediately identifiable):
 Export-TerminalHere -IncludeSchemes
 
 # Or pick a path explicitly:
@@ -162,6 +163,12 @@ Import-Module Save-TerminalHere
 ## Safety
 
 Every write makes a timestamped backup at `settings.json.<yyyyMMdd-HHmmss>.bak` next to the original. If something goes wrong, restore the most recent `.bak`.
+
+### settings.json formatting
+
+Windows Terminal's `settings.json` is JSONC — line comments (`//`), block comments (`/* */`) and trailing commas are all legal, and a fresh Windows Terminal install ships with several `//` comments in it. This module parses that dialect tolerantly, but writes back **plain JSON**: any comments in `settings.json` are stripped the first time `Save-TerminalHere` (or any other write cmdlet) runs. Whitespace and key ordering may also change.
+
+The pre-write `.bak` preserves the original byte-for-byte, and the module emits a `Write-Warning` on the first save that would strip comments. If you maintain hand-written comments in `settings.json`, either avoid the in-place writers in this module or copy comments back from the most recent `.bak` after each write.
 
 ## Requirements
 

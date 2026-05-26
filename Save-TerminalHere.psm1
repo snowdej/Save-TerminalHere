@@ -65,13 +65,101 @@ function Backup-TerminalSettings {
     $backup
 }
 
+function ConvertFrom-JsonCommented {
+    <#
+    .SYNOPSIS
+    Like ConvertFrom-Json but tolerates // line comments, /* block */ comments,
+    and trailing commas — the JSONC dialect Windows Terminal uses in settings.json.
+
+    .NOTES
+    Comments are stripped, not preserved. ConvertTo-Json on write produces plain
+    JSON; original comments survive only in the pre-write .bak file. Callers
+    that mutate settings.json should warn the user via Test-JsonHasComments
+    against the on-disk content before overwriting.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Json
+    )
+
+    # String-aware single pass: // or /* inside a "string literal" stays put.
+    $sb = [System.Text.StringBuilder]::new($Json.Length)
+    $i = 0; $n = $Json.Length
+    $inString = $false; $escape = $false
+    while ($i -lt $n) {
+        $c = $Json[$i]
+        if ($inString) {
+            [void]$sb.Append($c)
+            if     ($escape)    { $escape = $false }
+            elseif ($c -eq '\') { $escape = $true }
+            elseif ($c -eq '"') { $inString = $false }
+            $i++; continue
+        }
+        if ($c -eq '"') { $inString = $true; [void]$sb.Append($c); $i++; continue }
+        if ($c -eq '/' -and $i + 1 -lt $n) {
+            $next = $Json[$i + 1]
+            if ($next -eq '/') {
+                $i += 2
+                while ($i -lt $n -and $Json[$i] -ne "`n") { $i++ }
+                continue
+            }
+            if ($next -eq '*') {
+                $i += 2
+                while ($i + 1 -lt $n -and -not ($Json[$i] -eq '*' -and $Json[$i + 1] -eq '/')) { $i++ }
+                $i += 2; continue
+            }
+        }
+        [void]$sb.Append($c); $i++
+    }
+
+    # Trailing commas before } or ]. Not string-aware — a literal ",]" inside
+    # a quoted value would also be eaten. Vanishingly unlikely in settings.json.
+    $clean = [regex]::Replace($sb.ToString(), ',(\s*[}\]])', '$1')
+
+    $clean | ConvertFrom-Json -Depth 64
+}
+
+function Test-JsonHasComments {
+    <#
+    .SYNOPSIS
+    String-aware scan for JSONC comments. Returns $true if the input contains
+    a // or /* comment outside of any string literal. Used to warn the user
+    before a write-back would silently strip those comments.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Json
+    )
+
+    $i = 0; $n = $Json.Length
+    $inString = $false; $escape = $false
+    while ($i -lt $n) {
+        $c = $Json[$i]
+        if ($inString) {
+            if     ($escape)    { $escape = $false }
+            elseif ($c -eq '\') { $escape = $true }
+            elseif ($c -eq '"') { $inString = $false }
+            $i++; continue
+        }
+        if ($c -eq '"') { $inString = $true; $i++; continue }
+        if ($c -eq '/' -and $i + 1 -lt $n) {
+            $next = $Json[$i + 1]
+            if ($next -eq '/' -or $next -eq '*') { return $true }
+        }
+        $i++
+    }
+    $false
+}
+
 function Read-TerminalSettings {
     [CmdletBinding()]
     param()
 
     $path = Get-TerminalSettingsPath
     $raw = Get-Content -LiteralPath $path -Raw -Encoding UTF8
-    $raw | ConvertFrom-Json -Depth 64
+    ConvertFrom-JsonCommented -Json $raw
 }
 
 function Write-TerminalSettings {
@@ -82,6 +170,16 @@ function Write-TerminalSettings {
     )
 
     $path = Get-TerminalSettingsPath
+
+    # Warn once per write if the live file contains JSONC comments. We've
+    # already taken a .bak by this point (callers always back up first), so
+    # nothing is lost — but the user should know the in-place file will
+    # lose its comments.
+    $existing = Get-Content -LiteralPath $path -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
+    if ($existing -and (Test-JsonHasComments -Json $existing)) {
+        Write-Warning "settings.json contains JSONC comments — these will be stripped from the live file on save. The pre-write .bak preserves the original."
+    }
+
     $json = $Settings | ConvertTo-Json -Depth 64
     Set-Content -LiteralPath $path -Value $json -Encoding UTF8
 }
